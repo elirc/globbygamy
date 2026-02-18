@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PuzzleSize {
+  MINI
+  BIG
+}
+
+enum PuzzleType {
+  DAILY
+  CLASSIC
+  THEMED
+}
+
+model Puzzle {
+  id          String        @id @default(cuid())
+  locale      String
+  size        PuzzleSize
+  date        DateTime?
+  type        PuzzleType
+  theme       String?
+  title       String?
+  isPublished Boolean       @default(false)
+  groups      PuzzleGroup[]
+  results     GameResult[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([locale, size, type, isPublished])
+  @@index([date])
+  @@unique([locale, size, date, type])
+}
+
+model PuzzleGroup {
+  id            String        @id @default(cuid())
+  puzzleId       String
+  puzzle         Puzzle        @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  level          Int
+  groupIndex     Int
+  themeLabel     String
+  emojiHint      String?
+  members        Json
+  parentGroupId  String?
+  parentGroup    PuzzleGroup?  @relation("PuzzleGroupHierarchy", fields: [parentGroupId], references: [id], onDelete: SetNull)
+  childrenGroups PuzzleGroup[] @relation("PuzzleGroupHierarchy")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([puzzleId, level])
+  @@index([parentGroupId])
+  @@unique([puzzleId, level, groupIndex])
+}
+
+model GameResult {
+  id          String   @id @default(cuid())
+  puzzleId    String
+  puzzle      Puzzle   @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  playerKey   String?
+  completedAt DateTime @default(now())
+  timeSeconds Int
+  mistakes    Int      @default(0)
+  hintsUsed   Int      @default(0)
+  moveCount   Int      @default(0)
+  isComplete  Boolean  @default(true)
+  shareText   String?
+  createdAt   DateTime @default(now())
+
+  @@index([puzzleId, completedAt])
+}
