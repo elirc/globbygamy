@@ -1,5 +1,21 @@
 # Globs Plan v2 (Reviewed + Execution-Ready)
 
+> **Status note (2026-10-06):** This plan is a frozen record. Plan vs. code at `main` @ `063c3b1` (the only commit, 2026-02-18):
+>
+> | Plan item | Status | Where |
+> | --- | --- | --- |
+> | Playable daily mini puzzle | Built | `src/app/page.js`, `src/components/globs/GameClient.js` |
+> | Merge engine: level/group checks, upgrades, mistakes, hints, sort, color tags, undo | Built | `applyMerge`, `consumeHint`, `sortTiles`, `toggleTileColor`, `undo` in `src/lib/game/engine.js` |
+> | Win detection + share text | Built | `makeShareText` and the *Copy Share* button in `GameClient.js` |
+> | Local persistence | Built | `src/lib/game/storage.js` (one `localStorage` key per puzzle), restored through `HYDRATE` |
+> | Prisma schema + seed | Built | `prisma/schema.prisma` (`Puzzle`, `PuzzleGroup`, `GameResult`) and `prisma/seed.js` (one mini puzzle dated 2026-02-18) |
+> | `GET /api/puzzles/daily`, DB-first with fallback | Built | `src/app/api/puzzles/daily/route.js` calls `resolveDailyPuzzle.js`. The fallback only matches the sample puzzle's own date (see README "Notes"). |
+> | Payload contract | Matches | `buildPuzzlePayload` in `src/lib/puzzles/payload.js` returns exactly the fields below. Tiles are shuffled with a seed. |
+> | Reducer actions | Matches | All nine actions are handled in `src/lib/game/reducer.js`. |
+> | Phases 1-5 (server merge validation, big puzzles, results/streaks, generation queue, auth/billing) | Not started | No other API routes exist. `GameResult` is never written. `size=big` is accepted by `normalizeSize`, but no big puzzle is seeded or sampled. |
+>
+> The repo has no automated tests.
+
 ## What was strong in the original plan
 - Core puzzle loop and merge rules are clearly defined.
 - Data model captures hierarchy (`Puzzle` -> `PuzzleGroup`) and growth path.
